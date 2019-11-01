@@ -32,11 +32,12 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
       onError: console.error,
       pageSize: 10,
       filters: {},
+      selected: [],
       getCacheKey: state => hash(state)
     };
 
     componentDidMount () {
-      const { pageSize, filters, selected = [] } = this.props
+      const { pageSize, filters, selected } = this.props
       this.setState({ pageSize, filters, selected }, () => this.handleUpdate())
     }
 
@@ -147,9 +148,25 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
       this.setState({ selected })
     };
 
-    toggleSelectAll = () => {
+    toggleSelectAll = type => {
       const { data, selected: currentSelection } = this.state
-      const selected = currentSelection.length === data.length ? [] : data
+      const mustRemoveAll = data.every(({ id }) => currentSelection.some(s => s.id === id))
+
+      const checkedRows = mustRemoveAll
+        ? currentSelection.filter(({ id }) => !data.some(d => d.id === id))
+        : [...currentSelection, ...data]
+
+      const filteredRows = checkedRows.filter(
+        ({ id }, index) => checkedRows.findIndex(r => r.id === id) === index
+      )
+
+      const selected = type
+        ? filteredRows.map(row => ({
+          ...row,
+          tableName: row.tableName || type
+        }))
+        : filteredRows
+
       this.setState({ selected })
     };
 
