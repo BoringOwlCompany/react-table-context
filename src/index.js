@@ -41,6 +41,13 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
       this.setState({ pageSize, filters, selected }, () => this.handleUpdate())
     }
 
+    componentDidUpdate (prevProps) {
+      const { selected } = this.props
+      if (selected !== prevProps.selected) {
+        this.setState({ selected })
+      }
+    }
+
     handleUpdate = () => {
       const { meta, page, pageSize, search, filters, sorting } = this.state
       const key = this.props.getCacheKey({
