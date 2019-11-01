@@ -1,9 +1,9 @@
 {
   "name": "@lessondesk/react-table-context",
   "description": "Flexible Table Provider & Consumer",
-  "version": "1.0.0",
-    "main": "dist/react-table-context.js",
-    "source": "src/index.js",
+  "version": "1.0.1",
+  "main": "dist/react-table-context.js",
+  "source": "src/index.js",
   "bugs": {
     "url": "https://github.com/lessondesk/react-table-context/issues"
   },
@@ -13,9 +13,9 @@
     "url": "git+https://github.com/lessondesk/react-table-context.git"
   },
   "scripts": {
-      "lint": "standard --fix",
-      "build": "microbundle -o dist/ --sourcemap false --compress false --jsx React.createElement --format cjs",
-      "dev": "microbundle watch -o dist/ --sourcemap false --compress false --jsx React.createElement --format cjs"
+    "lint": "standard --fix",
+    "build": "microbundle -o dist/ --sourcemap false --compress false --jsx React.createElement --format cjs",
+    "dev": "microbundle watch -o dist/ --sourcemap false --compress false --jsx React.createElement --format cjs"
   },
   "keywords": [
     "lessondesk",
@@ -34,14 +34,14 @@
   "dependencies": {
     "hash-sum": "^2.0.0"
   },
-    "standard": {
-      "parser": "babel-eslint",
-      "ignore": [
-        "dist",
-        "example.js"
-      ],
-      "env": {
-        "browser": true
-      }
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "dist",
+      "example.js"
+    ],
+    "env": {
+      "browser": true
     }
+  }
 }
