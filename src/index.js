@@ -43,10 +43,14 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
 
     componentDidUpdate (prevProps) {
       const { selected } = this.props
-      if (selected !== prevProps.selected) {
-        this.setState({ selected })
-      }
+      const isSame = this.checkIfSame(selected, prevProps.selected)
+      if (!isSame) this.setState({ selected })
     }
+
+    checkIfSame = (selected, prevSelected) => (
+      selected.every(({id}) => prevSelected.some(s => s.id === id))
+      && prevSelected.every(({id}) => selected.some(s => s.id === id))
+    )
 
     handleUpdate = () => {
       const { meta, page, pageSize, search, filters, sorting } = this.state
