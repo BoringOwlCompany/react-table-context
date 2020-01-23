@@ -1,11 +1,11 @@
 import React, { createContext, Component } from 'react'
 import hash from 'hash-sum'
 
-export default function initTableContext (getData = () => Promise.resolve([])) {
+export default function initTableContext(getData = () => Promise.resolve([])) {
   const TableContext = createContext()
 
   class TableProvider extends Component {
-    constructor () {
+    constructor() {
       super()
       this.state = {
         page: 0,
@@ -36,20 +36,20 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
       getCacheKey: state => hash(state)
     };
 
-    componentDidMount () {
+    componentDidMount() {
       const { pageSize, filters, selected } = this.props
       this.setState({ pageSize, filters, selected }, () => this.handleUpdate())
     }
 
-    componentDidUpdate (prevProps) {
+    componentDidUpdate(prevProps) {
       const { selected } = this.props
       const isSame = this.checkIfSame(selected, prevProps.selected)
       if (!isSame) this.setState({ selected })
     }
 
     checkIfSame = (selected, prevSelected) => (
-      selected.every(({id}) => prevSelected.some(s => s.id === id))
-      && prevSelected.every(({id}) => selected.some(s => s.id === id))
+      selected.every(({ id }) => prevSelected.some(s => s.id === id))
+      && prevSelected.every(({ id }) => selected.some(s => s.id === id))
     )
 
     handleUpdate = () => {
@@ -134,9 +134,9 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
               )
             })
             .catch(error => {
-              console.error(error)
+              console.error('Init table context error: ', error)
               this.props.onError(error)
-              this.setState(error)
+              this.setState({ error, isLoading: false })
             })
         })
       }
@@ -213,7 +213,7 @@ export default function initTableContext (getData = () => Promise.resolve([])) {
       this.handleUpdate()
     };
 
-    render () {
+    render() {
       const value = {
         ...this.state,
         setSearch: this.setSearch,
