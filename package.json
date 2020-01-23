@@ -1,7 +1,7 @@
 {
   "name": "@lessondesk/react-table-context",
   "description": "Flexible Table Provider & Consumer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/react-table-context.js",
   "source": "src/index.js",
   "bugs": {
