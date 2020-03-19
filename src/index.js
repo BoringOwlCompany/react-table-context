@@ -35,7 +35,6 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
       filters: {},
       selected: [],
       getCacheKey: state => hash(state),
-      autoApplyFilters: false
     };
 
     componentDidMount() {
