@@ -1,6 +1,6 @@
 import React, { createContext, Component } from 'react'
 import hash from 'hash-sum'
-import { deepEqual } from ''
+import { deepEqual } from 'fast-equals'
 
 export default function initTableContext(getData = () => Promise.resolve([])) {
   const TableContext = createContext()
