@@ -1,5 +1,6 @@
 import React, { createContext, Component } from 'react'
 import hash from 'hash-sum'
+import { deepEqual } from ''
 
 export default function initTableContext(getData = () => Promise.resolve([])) {
   const TableContext = createContext()
@@ -33,7 +34,8 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
       pageSize: 10,
       filters: {},
       selected: [],
-      getCacheKey: state => hash(state)
+      getCacheKey: state => hash(state),
+      autoApplyFilters: false
     };
 
     componentDidMount() {
@@ -42,9 +44,12 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
     }
 
     componentDidUpdate(prevProps) {
-      const { selected } = this.props
+      const { selected, filters, autoApplyFilters } = this.props
       const isSame = this.checkIfSame(selected, prevProps.selected)
       if (!isSame) this.setState({ selected })
+
+      const shouldApplyFilters = autoApplyFilters && !deepEqual(filters, prevProps.filters)
+      if (shouldApplyFilters) this.setFilters(filters, true)
     }
 
     checkIfSame = (selected, prevSelected) => (
