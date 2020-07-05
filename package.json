@@ -28,7 +28,7 @@
   "license": "MIT",
   "devDependencies": {
     "babel-eslint": "^10.0.3",
-    "microbundle": "^0.11.0",
+    "microbundle": "^0.12.2",
     "standard": "^14.3.1"
   },
   "dependencies": {
