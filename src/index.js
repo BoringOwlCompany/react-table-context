@@ -1,13 +1,16 @@
 import React, { createContext, Component } from 'react'
 import hash from 'hash-sum'
 import { deepEqual } from 'fast-equals'
+import debounce from 'lodash.debounce'
 
-export default function initTableContext(getData = () => Promise.resolve([])) {
+const DEFAULT_SEARCH_WAIT = 500
+
+export default function initTableContext(requestData = () => Promise.resolve([])) {
   const TableContext = createContext()
 
   class TableProvider extends Component {
-    constructor() {
-      super()
+    constructor(props) {
+      super(props)
       this.state = {
         page: 0,
         pageSize: 10,
@@ -39,7 +42,7 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
 
     componentDidMount() {
       const { pageSize, filters, selected } = this.props
-      this.setState({ pageSize, filters, selected }, () => this.handleUpdate())
+      this.handleUpdate({ pageSize, filters, selected })
     }
 
     componentDidUpdate(prevProps) {
@@ -56,10 +59,10 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
       && prevSelected.every(({ id }) => selected.some(s => s.id === id))
     )
 
-    handleUpdate = () => {
-      const { meta, page, pageSize, search, filters, sorting } = this.state
-      const key = this.props.getCacheKey({
-        meta,
+    handleUpdate = (newValues) => {
+      const { page, pageSize, search, filters, sorting } = { ...this.state, ...newValues }
+      const { getCacheKey } = this.props
+      const key = getCacheKey({
         page,
         pageSize,
         search,
@@ -68,98 +71,102 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
         key: this.key
       })
 
+      const now = new Date()
+      this.latestRequestTime = now
+
       if (this.cache.has(key)) {
         const newState = this.cache.get(key)
-        this.setState({ ...newState })
+        this.setState({ ...newState, ...newValues })
       } else {
-        this.setState({ isLoading: true }, () => {
-          getData({ ...this.state })
-            .then(response => {
-              let data = []
-              let meta = {}
-
-              if (response.data && response.meta) {
-                data = response.data
-                meta = response.meta
-              } else {
-                data = response
-                meta = { count: data.length }
-              }
-
-              if (!Array.isArray(data)) {
-                throw new Error(
-                  `Invalid data provided. Expected array, but got ${typeof data}`
-                )
-              }
-
-              this.setState(
-                currentState => {
-                  const start = currentState.page * currentState.pageSize
-                  const end = start + currentState.pageSize
-
-                  return {
-                    ...currentState,
-                    data,
-                    meta,
-                    firstPage: currentState.page === 0,
-                    pageData: data.slice(start, end),
-                    isEmpty: data.length === 0,
-                    isLoading: false
-                  }
-                },
-                () => {
-                  const {
-                    firstPage,
-                    isEmpty,
-                    isLoading,
-                    pageData,
-                    unappliedFilters,
-                    meta,
-                    page,
-                    pageSize,
-                    search,
-                    filters
-                  } = this.state
-
-                  this.cache.set(key, {
-                    data: this.state.data,
-                    firstPage,
-                    isEmpty,
-                    isLoading,
-                    pageData,
-                    unappliedFilters,
-                    meta,
-                    page,
-                    pageSize,
-                    search,
-                    filters
-                  })
-                }
-              )
-            })
-            .catch(error => {
-              console.error('Init table context error: ', error)
-              this.props.onError(error)
-              this.setState({ error, isLoading: false })
-            })
-        })
+        this.setState(
+          { isLoading: true, ...newValues },
+          () => this.getData({ ...this.state, ...newValues }, key, now)
+        )
       }
-    };
+    }
 
-    setSearch = search => {
-      this.setState({ search, page: 0 }, () => this.handleUpdate())
-    };
+    getData = debounce(async (values, key, now) => {
+      try {
+        const response = await requestData(values)
+        if (this.latestRequestTime !== now) return
+        let data = []
+        let meta = {}
 
-    setPage = page => {
-      this.setState({ page }, () => this.handleUpdate())
-    };
+        if (response.data && response.meta) {
+          data = response.data
+          meta = response.meta
+        } else {
+          data = response
+          meta = { count: data.length }
+        }
 
-    setPageSize = pageSize => {
-      this.setState({ pageSize }, () => this.handleUpdate())
-    };
+        if (!Array.isArray(data)) {
+          throw new Error(
+            `Invalid data provided. Expected array, but got ${typeof data}`
+          )
+        }
+
+        this.setState(
+          currentState => {
+            const start = currentState.page * currentState.pageSize
+            const end = start + currentState.pageSize
+
+            return {
+              ...currentState,
+              data,
+              meta,
+              firstPage: currentState.page === 0,
+              pageData: data.slice(start, end),
+              isEmpty: data.length === 0,
+              isLoading: false
+            }
+          },
+          () => {
+            const {
+              firstPage,
+              isEmpty,
+              isLoading,
+              pageData,
+              unappliedFilters,
+              meta,
+              page,
+              pageSize,
+              search,
+              filters
+            } = this.state
+
+            this.cache.set(key, {
+              data: this.state.data,
+              firstPage,
+              isEmpty,
+              isLoading,
+              pageData,
+              unappliedFilters,
+              meta,
+              page,
+              pageSize,
+              search,
+              filters
+            })
+          }
+        )
+      } catch (error) {
+        console.error('Init table context error: ', error)
+        this.props.onError(error)
+        this.setState({ error, isLoading: false })
+      }
+    }, this.props.searchWait || DEFAULT_SEARCH_WAIT)
+
+    setSearch = search => this.handleUpdate({ search, page: 0 });
+
+    setPage = page => this.handleUpdate({ page });
+
+    setPageSize = pageSize => this.handleUpdate({ pageSize });
+
+    clearCache = () => this.cache = new Map();
 
     setSelected = selected => {
-      // NOTE: We do not want to refresh table if a item becomes selected.
+      // NOTE: We do not want to refresh table if an item becomes selected.
       this.setState({ selected })
     };
 
@@ -187,15 +194,12 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
 
     setFilters = (filters, clearData = false) => {
       const { data } = this.state
-      this.setState(
-        {
-          filters,
-          unappliedFilters: filters,
-          page: 0,
-          data: clearData ? [] : data
-        },
-        () => this.handleUpdate()
-      )
+      this.handleUpdate({
+        filters,
+        unappliedFilters: filters,
+        page: 0,
+        data: clearData ? [] : data
+      })
     };
 
     setUnappliedFilters = filters => {
@@ -209,9 +213,7 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
       this.setFilters(unappliedFilters)
     };
 
-    setSorting = sorting => {
-      this.setState({ sorting }, () => this.handleUpdate())
-    };
+    setSorting = sorting => this.handleUpdate({ sorting });
 
     refresh = () => {
       this.handleUpdate()
@@ -229,7 +231,8 @@ export default function initTableContext(getData = () => Promise.resolve([])) {
         toggleSelectAll: this.toggleSelectAll,
         setFilters: this.setFilters,
         setUnappliedFilters: this.setUnappliedFilters,
-        applyFilters: this.applyFilters
+        applyFilters: this.applyFilters,
+        clearCache: this.clearCache
       }
 
       return (
