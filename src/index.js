@@ -163,6 +163,8 @@ export default function initTableContext(requestData = () => Promise.resolve([])
 
     setPageSize = pageSize => this.handleUpdate({ pageSize });
 
+    clearCache = () => this.cache = new Map();
+
     setSelected = selected => {
       // NOTE: We do not want to refresh table if an item becomes selected.
       this.setState({ selected })
@@ -229,7 +231,8 @@ export default function initTableContext(requestData = () => Promise.resolve([])
         toggleSelectAll: this.toggleSelectAll,
         setFilters: this.setFilters,
         setUnappliedFilters: this.setUnappliedFilters,
-        applyFilters: this.applyFilters
+        applyFilters: this.applyFilters,
+        clearCache: this.clearCache
       }
 
       return (
