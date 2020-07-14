@@ -3,6 +3,8 @@ import hash from 'hash-sum'
 import { deepEqual } from 'fast-equals'
 import debounce from 'lodash.debounce'
 
+const DEFAULT_SEARCH_WAIT = 500
+
 export default function initTableContext(requestData = () => Promise.resolve([])) {
   const TableContext = createContext()
 
@@ -25,9 +27,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
         selected: [],
         search: ''
       }
-      const { searchWait = 300 } = props
 
-      this.getDataDebounced = debounce(this.getData, searchWait)
       this.key = hash(Date.now())
       this.cache = new Map()
     }
@@ -61,7 +61,8 @@ export default function initTableContext(requestData = () => Promise.resolve([])
 
     handleUpdate = (newValues) => {
       const { page, pageSize, search, filters, sorting } = { ...this.state, ...newValues }
-      const key = this.props.getCacheKey({
+      const { getCacheKey } = this.props
+      const key = getCacheKey({
         page,
         pageSize,
         search,
@@ -70,20 +71,24 @@ export default function initTableContext(requestData = () => Promise.resolve([])
         key: this.key
       })
 
+      const now = new Date()
+      this.latestRequestTime = now
+
       if (this.cache.has(key)) {
         const newState = this.cache.get(key)
         this.setState({ ...newState, ...newValues })
       } else {
         this.setState(
-          { isLoading: true, ...newValues }, 
-          () => this.getDataDebounced({ ...this.state, ...newValues }, key)
+          { isLoading: true, ...newValues },
+          () => this.getData({ ...this.state, ...newValues }, key, now)
         )
       }
-    };
+    }
 
-    getData = async (values, key) => {
+    getData = debounce(async (values, key, now) => {
       try {
         const response = await requestData(values)
+        if (this.latestRequestTime !== now) return
         let data = []
         let meta = {}
 
@@ -150,7 +155,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
         this.props.onError(error)
         this.setState({ error, isLoading: false })
       }
-    }
+    }, this.props.searchWait || DEFAULT_SEARCH_WAIT)
 
     setSearch = search => this.handleUpdate({ search, page: 0 });
 
