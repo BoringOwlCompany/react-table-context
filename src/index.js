@@ -164,7 +164,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
     setPageSize = pageSize => this.handleUpdate({ pageSize });
 
     setSelected = selected => {
-      // NOTE: We do not want to refresh table if a item becomes selected.
+      // NOTE: We do not want to refresh table if an item becomes selected.
       this.setState({ selected })
     };
 
