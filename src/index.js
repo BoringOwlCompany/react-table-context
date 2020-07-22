@@ -75,9 +75,9 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       this.latestRequestTime = now
 
       const { forceRefresh } = config
-      const shouldForceUpdate = typeof forceRefresh === 'boolean' && forceRefresh
+      const shouldForceRefresh = typeof forceRefresh === 'boolean' && forceRefresh
 
-      if (!shouldForceUpdate && this.cache.has(key)) {
+      if (!shouldForceRefresh && this.cache.has(key)) {
         const newState = this.cache.get(key)
         this.setState({ ...newState, ...newValues })
       } else {
