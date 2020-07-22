@@ -215,6 +215,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
     setSorting = sorting => this.handleUpdate({ sorting });
 
     refresh = () => {
+      this.clearCache()
       this.handleUpdate()
     };
 
