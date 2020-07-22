@@ -59,7 +59,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       && prevSelected.every(({ id }) => selected.some(s => s.id === id))
     )
 
-    handleUpdate = (newValues, config = {}) => {
+    handleUpdate = (newValues) => {
       const { page, pageSize, search, filters, sorting } = { ...this.state, ...newValues }
       const { getCacheKey } = this.props
       const key = getCacheKey({
@@ -74,10 +74,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       const now = new Date()
       this.latestRequestTime = now
 
-      const { forceRefresh } = config
-      const shouldForceRefresh = typeof forceRefresh === 'boolean' && forceRefresh
-
-      if (!shouldForceRefresh && this.cache.has(key)) {
+      if (this.cache.has(key)) {
         const newState = this.cache.get(key)
         this.setState({ ...newState, ...newValues })
       } else {
@@ -217,8 +214,9 @@ export default function initTableContext(requestData = () => Promise.resolve([])
 
     setSorting = sorting => this.handleUpdate({ sorting });
 
-    refresh = (config = {}) => {
-      this.handleUpdate({}, config)
+    refresh = () => {
+      this.clearCache()
+      this.handleUpdate()
     };
 
     render() {
