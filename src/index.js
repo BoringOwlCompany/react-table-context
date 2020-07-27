@@ -192,12 +192,11 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       this.setState({ selected })
     };
 
-    setFilters = (filters, clearData = false) => {
+    setFilters = (filters) => {
       this.handleUpdate({
         filters,
         unappliedFilters: filters,
-        page: 0,
-        ...(clearData && { data: [] })
+        page: 0
       })
     };
 
