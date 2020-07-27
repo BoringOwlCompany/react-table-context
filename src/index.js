@@ -51,7 +51,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       if (!isSame) this.setState({ selected })
 
       const shouldApplyFilters = autoApplyFilters && !deepEqual(filters, prevProps.filters)
-      if (shouldApplyFilters) this.setFilters(filters, true)
+      if (shouldApplyFilters) this.setFilters(filters)
     }
 
     checkIfSame = (selected, prevSelected) => (
@@ -71,11 +71,16 @@ export default function initTableContext(requestData = () => Promise.resolve([])
         key: this.key
       })
 
+      console.log({ key })
+
       const now = new Date()
       this.latestRequestTime = now
 
+      console.log(this.cache)
+
       if (this.cache.has(key)) {
         const newState = this.cache.get(key)
+        console.log({ newState })
         this.setState({ ...newState, ...newValues })
       } else {
         this.setState(
