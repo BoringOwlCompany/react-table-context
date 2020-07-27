@@ -51,7 +51,7 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       if (!isSame) this.setState({ selected })
 
       const shouldApplyFilters = autoApplyFilters && !deepEqual(filters, prevProps.filters)
-      if (shouldApplyFilters) this.setFilters(filters, true)
+      if (shouldApplyFilters) this.setFilters(filters)
     }
 
     checkIfSame = (selected, prevSelected) => (
@@ -192,12 +192,11 @@ export default function initTableContext(requestData = () => Promise.resolve([])
       this.setState({ selected })
     };
 
-    setFilters = (filters, clearData = false) => {
+    setFilters = (filters) => {
       this.handleUpdate({
         filters,
         unappliedFilters: filters,
-        page: 0,
-        ...(clearData && { data: [] })
+        page: 0
       })
     };
 
