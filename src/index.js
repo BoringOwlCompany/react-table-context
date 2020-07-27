@@ -71,16 +71,11 @@ export default function initTableContext(requestData = () => Promise.resolve([])
         key: this.key
       })
 
-      console.log({ key })
-
       const now = new Date()
       this.latestRequestTime = now
 
-      console.log(this.cache)
-
       if (this.cache.has(key)) {
         const newState = this.cache.get(key)
-        console.log({ newState })
         this.setState({ ...newState, ...newValues })
       } else {
         this.setState(
