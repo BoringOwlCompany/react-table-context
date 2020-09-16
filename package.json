@@ -1,7 +1,7 @@
 {
   "name": "@lessondesk/react-table-context",
   "description": "Flexible Table Provider & Consumer",
-  "version": "1.1.0",
+  "version": "1.2.4",
   "main": "dist/react-table-context.js",
   "source": "src/index.js",
   "bugs": {
@@ -28,12 +28,13 @@
   "license": "MIT",
   "devDependencies": {
     "babel-eslint": "^10.0.3",
-    "microbundle": "^0.11.0",
+    "microbundle": "^0.12.2",
     "standard": "^14.3.1"
   },
   "dependencies": {
     "fast-equals": "^2.0.0",
-    "hash-sum": "^2.0.0"
+    "hash-sum": "^2.0.0",
+    "lodash.debounce": "^4.0.8"
   },
   "standard": {
     "parser": "babel-eslint",
